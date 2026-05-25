@@ -2,17 +2,16 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main", "POEPROJECT2", "master" ]
+    branches: [ "main", "POEPROJECT2" ]
   pull_request:
-    branches: [ "main", "POEPROJECT2", "master" ]
+    branches: [ "main", "POEPROJECT2" ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout Source Code
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -21,44 +20,14 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Create pom.xml
+    - name: Compile and Run Tests Manual Fallback
       run: |
-        cat > pom.xml << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.mycompany</groupId>
-            <artifactId>POEPROJECT2</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            
-            <properties>
-                <maven.compiler.source>17</maven.compiler.source>
-                <maven.compiler.target>17</maven.compiler.target>
-            </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter</artifactId>
-                    <version>5.10.2</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </project>
-        EOF
-
-    - name: Copy Java Files
-      run: |
-        mkdir -p src/main/java
-        cp *.java src/main/java/ 2>/dev/null || echo "No .java files in root"
-
-    - name: Compile Project
-      run: mvn clean compile --no-transfer-progress
-
-    - name: Run Tests
-      run: mvn test --no-transfer-progress || echo "Tests completed (some may be skipped)"
-
-    - name: Build Status
-      run: echo "Build Finished Successfully!"
+        mkdir -p src/main/java/com/mycompany/message/java
+        mkdir -p src/test/java/com/mycompany/message/java
+        mv Message.java src/main/java/com/mycompany/message/java/ || true
+        mv QuickChat.java src/main/java/com/mycompany/message/java/ || true
+        mv MessageTest.java src/test/java/com/mycompany/message/java/ || true
+        
+        echo '<project xmlns="http://apache.org" xmlns:xsi="http://w3.org" xsi:schemaLocation="http://apache.org http://apache.org"><modelVersion>4.0.0</modelVersion><groupId>com.mycompany</groupId><artifactId>message</artifactId><version>1.0-SNAPSHOT</version><properties><maven.compiler.source>17</maven.compiler.source><maven.compiler.target>17</maven.compiler.target></properties><dependencies><dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter-api</artifactId><version>5.11.0</version><scope>test</scope></dependency><dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter-engine</artifactId><version>5.11.0</version><scope>test</scope></dependency></dependencies></project>' > pom.xml
+        
+        mvn -B test
