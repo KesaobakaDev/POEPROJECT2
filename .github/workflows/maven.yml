@@ -1,0 +1,71 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main", "part2poe", "master" ]
+  pull_request:
+    branches: [ "main", "part2poe", "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Create pom.xml
+      run: |
+        cat > pom.xml << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.mycompany</groupId>
+            <artifactId>QuickChat-POE</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter</artifactId>
+                    <version>5.10.2</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </project>
+        EOF
+
+    - name: Move files to correct Maven structure
+      run: |
+        mkdir -p src/main/java
+        mkdir -p src/test/java
+        
+        # Move your main classes
+        mv POEprojectpart1.java src/main/java/ 2>/dev/null || true
+        mv Login.java src/main/java/ 2>/dev/null || true
+        mv Message.java src/main/java/ 2>/dev/null || true
+        mv MessageStorage.java src/main/java/ 2>/dev/null || true
+        
+        echo "Files moved to Maven structure"
+
+    - name: Compile Project
+      run: mvn clean compile
+
+    - name: Run Unit Tests
+      run: mvn test
